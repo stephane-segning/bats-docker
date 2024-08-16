@@ -17,12 +17,12 @@ FROM centos:${CENTOS_VERSION} as centos
 ARG WAZUH_AGENT_VERSION
 ARG WAZUH_MANAGER
 ARG WAZUH_AGENT_NAME
+RUN rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH
 RUN yum install -y epel-release && \
     yum install -y wazuh-agent-${WAZUH_AGENT_VERSION} && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
 
 # Next, use openSUSE
 FROM opensuse/leap:${OPENSUSE_VERSION} as opensuse
@@ -32,8 +32,7 @@ ARG WAZUH_AGENT_NAME
 RUN zypper install -y wazuh-agent=${WAZUH_AGENT_VERSION} && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
 
 # Next, use Ubuntu
 FROM ubuntu:${UBUNTU_VERSION} as ubuntu
@@ -46,8 +45,7 @@ RUN apt-get update && apt-get install -y wget apt-transport-https lsb-release gn
     apt-get update && apt-get install -y wazuh-agent=${WAZUH_AGENT_VERSION}-1 && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
 
 # Next, use Debian
 FROM debian:${DEBIAN_VERSION} as debian
@@ -60,8 +58,7 @@ RUN apt-get update && apt-get install -y wget apt-transport-https lsb-release gn
     apt-get update && apt-get install -y wazuh-agent=${WAZUH_AGENT_VERSION}-1 && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
 
 # Next, use Alpine
 FROM alpine:${ALPINE_VERSION} as alpine
@@ -74,8 +71,7 @@ RUN apk add --no-cache bash wget && \
     apk update && apk add wazuh-agent=${WAZUH_AGENT_VERSION} && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    rc-update add wazuh-agent && \
-    service wazuh-agent start
+    /var/ossec/bin/wazuh-control start
 
 # Next, use Fedora
 FROM fedora:${FEDORA_VERSION} as fedora
@@ -85,8 +81,7 @@ ARG WAZUH_AGENT_NAME
 RUN dnf install -y wazuh-agent-${WAZUH_AGENT_VERSION} && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
 
 # Finally, use Arch Linux
 FROM archlinux:${ARCH_VERSION} as arch
@@ -99,5 +94,4 @@ RUN pacman -Syu --noconfirm wget && \
     pacman -Sy --noconfirm wazuh-agent=${WAZUH_AGENT_VERSION} && \
     sed -i "s/MANAGER_IP/${WAZUH_MANAGER}/g" /var/ossec/etc/ossec.conf && \
     sed -i "s/AGENT_NAME/${WAZUH_AGENT_NAME}/g" /var/ossec/etc/ossec.conf && \
-    systemctl enable wazuh-agent && \
-    systemctl start wazuh-agent
+    /var/ossec/bin/wazuh-control start
