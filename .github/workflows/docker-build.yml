@@ -1,0 +1,79 @@
+name: Build and Tag Wazuh Agent Docker Images
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-wazuh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [centos, opensuse, ubuntu, debian, alpine, fedora, arch]
+        include:
+          - os: centos
+            version: 7
+          - os: opensuse
+            version: 15.3
+          - os: ubuntu
+            version: 20.04
+          - os: debian
+            version: buster
+          - os: alpine
+            version: 3.14
+          - os: fedora
+            version: 34
+          - os: arch
+            version: latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to the Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: lowercase
+        uses: AsZc/change-string-case-action@v6
+        with:
+          string: ${{ github.repository }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.lowercase }}
+          tags: |
+            type=raw,value=${{ matrix.os }}-${{ matrix.version }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        continue-on-error: true
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            WAZUH_AGENT_VERSION=4.8.1
+            WAZUH_MANAGER=10.0.0.2
+            WAZUH_AGENT_NAME=test123
