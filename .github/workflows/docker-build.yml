@@ -21,17 +21,39 @@ jobs:
         os: [centos, opensuse, ubuntu, debian, alpine, fedora]
         include:
           - os: centos
+            version: latest
+          - os: centos
+            version: 8
+          - os: centos
             version: 7
           - os: opensuse
-            version: 15.3
+            version: latest
+          - os: opensuse
+            version: 15
           - os: ubuntu
-            version: 20.04
+            version: latest
+          - os: ubuntu
+            version: jammy
+          - os: ubuntu
+            version: focal
+          - os: ubuntu
+            version: noble
+          - os: debian
+            version: latest
           - os: debian
             version: buster
           - os: alpine
-            version: 3.14
+            version: latest
+          - os: alpine
+            version: edge
+          - os: alpine
+            version: 3
           - os: fedora
-            version: 34
+            version: latest
+          - os: fedora
+            version: 41
+          - os: fedora
+            version: 40
 
     steps:
       - name: Checkout code
@@ -71,3 +93,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+          target: ${{ matrix.os }}
+          build-args: |
+            CENTOS_VERSION=${{ matrix.version }}
+            OPENSUSE_VERSION=${{ matrix.version }}
+            UBUNTU_VERSION=${{ matrix.version }}
+            DEBIAN_VERSION=${{ matrix.version }}
+            ALPINE_VERSION=${{ matrix.version }}
+            FEDORA_VERSION=${{ matrix.version }}
