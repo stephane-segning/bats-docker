@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [centos, opensuse, ubuntu, debian, alpine, fedora, arch]
+        os: [centos, opensuse, ubuntu, debian, alpine, fedora]
         include:
           - os: centos
             version: 7
@@ -32,8 +32,6 @@ jobs:
             version: 3.14
           - os: fedora
             version: 34
-          - os: arch
-            version: latest
 
     steps:
       - name: Checkout code
@@ -72,8 +70,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          #platforms: linux/amd64,linux/arm64
-          build-args: |
-            WAZUH_AGENT_VERSION=4.8.1
-            WAZUH_MANAGER=10.0.0.2
-            WAZUH_AGENT_NAME=test123
+          platforms: linux/amd64,linux/arm64
