@@ -15,7 +15,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      packages: write
+      contents: read
     strategy:
       matrix:
         include:
@@ -91,7 +93,6 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v4
-        continue-on-error: true
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
