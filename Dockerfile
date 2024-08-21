@@ -24,19 +24,24 @@ RUN bats --version
 # Next, use openSUSE
 FROM opensuse/leap:${OPENSUSE_VERSION} as opensuse
 RUN zypper install -y bats && zypper clean --all
+RUN bats --version
 
 # Next, use Ubuntu
 FROM ubuntu:${UBUNTU_VERSION} as ubuntu
 RUN apt-get update && apt-get install -y bats
+RUN bats --version
 
 # Next, use Debian
 FROM debian:${DEBIAN_VERSION} as debian
 RUN apt-get update && apt-get install -y bats
+RUN bats --version
 
 # Next, use Alpine
 FROM alpine:${ALPINE_VERSION} as alpine
 RUN apk add --no-cache bash bats
+RUN bats --version
 
 # Next, use Fedora
 FROM fedora:${FEDORA_VERSION} as fedora
 RUN dnf install -y bats
+RUN bats --version
