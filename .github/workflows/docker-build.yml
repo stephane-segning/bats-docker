@@ -1,9 +1,9 @@
-name: Build and Tag Wazuh Agent Docker Images
+name: Build and Tag Bats Docker Images
 
 on:
   push:
     branches:
-      - main
+      - '*'
   pull_request:
     branches:
       - main
@@ -79,6 +79,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: lowercase
+        name: Lowercase repository name
         uses: AsZc/change-string-case-action@v6
         with:
           string: ${{ github.repository }}
@@ -91,14 +92,24 @@ jobs:
           tags: |
             type=raw,value=${{ matrix.os }}-${{ matrix.version }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v4
+      - name: Cache Docker layers
+        uses: actions/cache@v4
         with:
-          push: true
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.os }}-${{ matrix.version }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.os }}-${{ matrix.version }}-
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
           target: ${{ matrix.os }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             CENTOS_VERSION=${{ matrix.version }}
             OPENSUSE_VERSION=${{ matrix.version }}
@@ -106,3 +117,11 @@ jobs:
             DEBIAN_VERSION=${{ matrix.version }}
             ALPINE_VERSION=${{ matrix.version }}
             FEDORA_VERSION=${{ matrix.version }}
+
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
