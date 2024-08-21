@@ -8,9 +8,18 @@ ARG FEDORA_VERSION=34
 
 # Start with CentOS
 FROM centos:${CENTOS_VERSION} as centos
-RUN yum install -y epel-release \
-    && yum install -y bats \
-    && yum clean all
+
+RUN cd /etc/yum.repos.d/
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+RUN yum install -y git
+RUN yum clean all
+
+RUN git clone https://github.com/bats-core/bats-core.git
+RUN cd bats-core && ./install.sh /usr/local
+
+RUN bats --version
 
 # Next, use openSUSE
 FROM opensuse/leap:${OPENSUSE_VERSION} as opensuse
