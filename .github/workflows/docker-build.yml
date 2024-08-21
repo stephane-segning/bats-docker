@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-wazuh
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -18,36 +18,46 @@ jobs:
 
     strategy:
       matrix:
-        os:
-        - name: centos
-          version:
-            - latest
-            - 8
-            - 7
-        - name: opensuse
-          version:
-            - latest
-            - 15
-        - name: ubuntu
-          version:
-            - latest
-            - jammy
-            - focal
-            - noble
-        - name: debian
-          version:
-            - latest
-            - buster
-        - name: alpine
-          version:
-            - latest
-            - edge
-            - 3
-        - name: fedora
-          version:
-            - latest
-            - 41
-            - 40
+        include:
+        - os: centos
+          version: latest
+        - os: centos
+          version: 8
+        - os: centos
+          version: 7
+
+        - os: opensuse
+          version: latest
+        - os: opensuse
+          version: 15
+
+        - os: ubuntu
+          version: latest
+        - os: ubuntu
+          version: jammy
+        - os: ubuntu
+          version: focal
+        - os: ubuntu
+          version: noble
+
+        - os: debian
+          version: latest
+        - os: debian
+          version: buster
+
+        - os: alpine
+          version: latest
+        - os: alpine
+          version: edge
+        - os: alpine
+          version: 3
+
+        - os: fedora
+          version: latest
+        - os: fedora
+          version: 41
+        - os: fedora
+          version: 40
 
     steps:
       - name: Checkout code
@@ -77,7 +87,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.lowercase }}
           tags: |
-            type=raw,value=${{ matrix.os.name }}-${{ matrix.os.version }}
+            type=raw,value=${{ matrix.os }}-${{ matrix.version }}
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -89,9 +99,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           target: ${{ matrix.os.name }}
           build-args: |
-            CENTOS_VERSION=${{ matrix.os.version }}
-            OPENSUSE_VERSION=${{ matrix.os.version }}
-            UBUNTU_VERSION=${{ matrix.os.version }}
-            DEBIAN_VERSION=${{ matrix.os.version }}
-            ALPINE_VERSION=${{ matrix.os.version }}
-            FEDORA_VERSION=${{ matrix.os.version }}
+            CENTOS_VERSION=${{ matrix.version }}
+            OPENSUSE_VERSION=${{ matrix.version }}
+            UBUNTU_VERSION=${{ matrix.version }}
+            DEBIAN_VERSION=${{ matrix.version }}
+            ALPINE_VERSION=${{ matrix.version }}
+            FEDORA_VERSION=${{ matrix.version }}
